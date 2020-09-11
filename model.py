@@ -153,9 +153,9 @@ class EqualLinear(nn.Module):
         self.manipulation = ManipulationLayer(layerID)
 
     def forward(self, input_dict):
-        print(input_dict.keys)
         input_ = input_dict['x']
         transform_dict_list = input_dict['tdl']
+
         if self.activation:
             out = F.linear(input_, self.weight * self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
@@ -165,7 +165,7 @@ class EqualLinear(nn.Module):
                 input_, self.weight * self.scale, bias=self.bias * self.lr_mul
             )
         
-            out = self.manipulation(out, transform_dict_list)
+        out = self.manipulation(out, transform_dict_list)
         
         return {'x': out, 'tdl': transform_dict_list}
 
@@ -505,6 +505,7 @@ class Generator(nn.Module):
         randomize_noise=True,
         transform_dict_list=[]
     ):
+
         if not input_is_latent:
             styles = [self.style({'x':s, 'tdl':transform_dict_list})['x'] for s in styles]
 
@@ -534,7 +535,6 @@ class Generator(nn.Module):
 
             else:
                 latent = styles[0]
-
         else:
             if inject_index is None:
                 inject_index = random.randint(1, self.n_latent - 1)
@@ -544,11 +544,12 @@ class Generator(nn.Module):
 
             latent = torch.cat([latent, latent2], 1)
         activation_map_list = []
+
         out = self.input(latent)
         out = self.conv1(out, latent[:, 0], noise=noise[0])
         # activation_map_list.append(out)
         skip = self.to_rgb1(out, latent[:, 1])
-
+ 
         i = 1
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
